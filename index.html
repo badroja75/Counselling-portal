@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Counselling Choice Portal</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#111;background:#f5f6f8}
+*{box-sizing:border-box}body{margin:0}.wrap{max-width:760px;margin:auto;padding:18px}
+.card{background:#fff;border-radius:18px;padding:20px;box-shadow:0 4px 20px #0001;margin:12px 0}
+h1{font-size:26px;margin:4px 0 8px}h2{font-size:18px;margin:0 0 12px}
+p{color:#555;line-height:1.45}.row{display:flex;gap:10px;align-items:center}
+input,button{font:inherit;border-radius:12px;padding:12px;border:1px solid #d5d8dd}
+input{width:100%;background:#fff}button{background:#111;color:#fff;border:0;font-weight:600}
+button.secondary{background:#e9ebef;color:#111}.choice{display:flex;gap:10px;align-items:center;padding:12px;border:1px solid #ddd;border-radius:12px;margin:8px 0;background:#fff}
+.choice span{flex:1}.choice button{padding:7px 10px}.muted{font-size:13px;color:#777}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.empty{padding:20px;text-align:center;color:#777}
+@media(max-width:520px){.wrap{padding:12px}.actions{grid-template-columns:1fr}h1{font-size:23px}}
+@media print{body{background:#fff}.no-print{display:none!important}.card{box-shadow:none;border:0}.choice button{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="card"><h1>Counselling Choice Portal</h1><p>Create your counselling choice list, reorder it, and save a clean PDF on your iPhone/iPad.</p></div>
+<div class="card no-print"><h2>Add a choice</h2><div class="row"><input id="choiceInput" placeholder="e.g. GMERS Medical College, Vadodara"><button id="addBtn">Add</button></div><p class="muted">Add colleges, courses, branches, or any counselling choices.</p></div>
+<div class="card"><h2>Your choices</h2><div id="list" class="empty">No choices added yet.</div></div>
+<div class="card no-print"><div class="actions"><button id="pdfBtn">Save / Print PDF</button><button class="secondary" id="clearBtn">Clear all</button></div><p class="muted">On iPhone/iPad, use the print/share sheet and choose Save to Files.</p></div>
+</div>
+<script>
+const input=document.getElementById('choiceInput'),list=document.getElementById('list');
+let choices=JSON.parse(localStorage.getItem('counsellingChoices')||'[]');
+function save(){localStorage.setItem('counsellingChoices',JSON.stringify(choices));render()}
+function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function render(){if(!choices.length){list.className='empty';list.textContent='No choices added yet.';return}list.className='';list.innerHTML='<ol>'+choices.map((c,i)=>'<li class="choice"><span>'+escapeHtml(c)+'</span><button onclick="move('+i+',-1)">↑</button><button onclick="move('+i+',1)">↓</button><button onclick="removeChoice('+i+')">×</button></li>').join('')+'</ol>'}
+function add(){const v=input.value.trim();if(!v)return;choices.push(v);input.value='';save();input.focus()}
+function removeChoice(i){choices.splice(i,1);save()}
+function move(i,d){const j=i+d;if(j<0||j>=choices.length)return;[choices[i],choices[j]]=[choices[j],choices[i]];save()}
+document.getElementById('addBtn').onclick=add;
+input.addEventListener('keydown',e=>{if(e.key==='Enter')add()});
+document.getElementById('clearBtn').onclick=()=>{if(confirm('Clear all choices?')){choices=[];save()}};
+document.getElementById('pdfBtn').onclick=()=>{const old=document.title;document.title='Counselling Choice List';window.print();setTimeout(()=>document.title=old,1000)};
+render();
+</script>
+</body>
+</html>
