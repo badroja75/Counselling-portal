@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#111827">
+<title>Counselling Choice List</title>
+<style>
+:root{
+  --bg:#f3f4f6;--card:#fff;--text:#111827;--muted:#6b7280;
+  --line:#e5e7eb;--dark:#111827;--soft:#f3f4f6;--danger:#dc2626;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+.wrap{max-width:720px;margin:0 auto;padding:18px 14px 40px}
+.hero{padding:18px 4px 10px}
+.hero h1{font-size:30px;line-height:1.1;margin:0 0 8px;font-weight:800}
+.hero p{margin:0;color:var(--muted);font-size:15px;line-height:1.45}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;margin:12px 0;box-shadow:0 8px 24px rgba(17,24,39,.05)}
+.label{display:block;font-size:14px;font-weight:700;margin-bottom:8px}
+.row{display:flex;gap:10px}
+input{min-width:0;flex:1;border:1px solid #d1d5db;border-radius:14px;padding:14px;font:inherit;font-size:16px;outline:none;background:#fff}
+input:focus{border-color:#111827;box-shadow:0 0 0 3px #11182714}
+button{border:0;border-radius:14px;padding:13px 16px;font:inherit;font-weight:700;background:var(--dark);color:#fff;min-height:48px}
+button:active{transform:scale(.98)}
+button.secondary{background:var(--soft);color:var(--text)}
+button.danger{background:#fee2e2;color:var(--danger)}
+.hint{font-size:13px;color:var(--muted);margin:10px 0 0}
+.section-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.section-head h2{font-size:18px;margin:0}
+.count{font-size:13px;color:var(--muted);font-weight:700}
+ol{margin:0;padding-left:28px}
+.choice{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:14px;padding:8px 8px 8px 10px;margin:8px 0;background:#fff}
+.choice-name{flex:1;min-width:0;font-size:15px;line-height:1.35;overflow-wrap:anywhere}
+.choice-actions{display:flex;gap:5px}
+.icon{width:40px;min-width:40px;height:40px;min-height:40px;padding:0;border-radius:11px;font-size:17px}
+.empty{padding:28px 10px;text-align:center;color:var(--muted);border:1px dashed #d1d5db;border-radius:14px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.primary{width:100%;font-size:16px}
+.status{text-align:center;font-size:13px;color:var(--muted);margin-top:10px;min-height:18px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:20}
+.modal.show{display:flex}
+.modal-card{background:#fff;border-radius:24px;padding:24px;max-width:420px;width:100%;text-align:center}
+.modal-card h2{margin:0 0 8px;font-size:22px}
+.modal-card p{margin:0 0 18px;color:var(--muted);line-height:1.45}
+.modal-card button{width:100%;margin-top:8px}
+.print-title{display:none}
+@media(max-width:520px){
+ .wrap{padding:12px 10px 28px}.hero h1{font-size:27px}
+ .row{flex-direction:column}.row button{width:100%}
+ .actions{grid-template-columns:1fr}
+ .choice-actions{flex-shrink:0}.icon{width:36px;min-width:36px;height:36px;min-height:36px}
+}
+@media print{
+ body{background:#fff}.no-print{display:none!important}.wrap{max-width:none;padding:0}
+ .hero{padding:0 0 14px}.hero h1{font-size:24px}.hero p{display:none}
+ .card{border:0;box-shadow:none;padding:0;margin:0}
+ .print-title{display:block;font-size:13px;color:#6b7280;margin-bottom:14px}
+ .choice{border:0;border-bottom:1px solid #eee;border-radius:0;padding:9px 0;margin:0}
+ .choice-actions{display:none!important}
+ ol{padding-left:28px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <h1>Counselling Choice List</h1>
+    <p>Add your colleges/courses, arrange them in preference order, then save the final list as a PDF.</p>
+  </div>
+
+  <div class="card no-print">
+    <label class="label" for="choiceInput">Add a choice</label>
+    <div class="row">
+      <input id="choiceInput" autocomplete="off" placeholder="e.g. GMERS Medical College, Vadodara">
+      <button id="addBtn">Add choice</button>
+    </div>
+    <p class="hint">Your list is automatically saved on this device.</p>
+  </div>
+
+  <div class="card">
+    <div class="section-head">
+      <h2>Your preferences</h2>
+      <span class="count" id="count">0 choices</span>
+    </div>
+    <div class="print-title" id="printDate"></div>
+    <div id="list" class="empty">No choices added yet.</div>
+  </div>
+
+  <div class="card no-print">
+    <div class="actions">
+      <button class="primary" id="pdfBtn">Save final list as PDF</button>
+      <button class="secondary" id="clearBtn">Clear all</button>
+    </div>
+    <div class="status" id="status"></div>
+  </div>
+</div>
+
+<div class="modal" id="doneModal" role="dialog" aria-modal="true">
+  <div class="modal-card">
+    <h2>PDF screen opened</h2>
+    <p>Save the PDF from the iPhone/iPad share sheet. When you are finished, tap Done below.</p>
+    <button id="doneBtn">Done</button>
+    <button class="secondary" id="stayBtn">Back to choices</button>
+  </div>
+</div>
+
+<script>
+const input=document.getElementById('choiceInput');
+const list=document.getElementById('list');
+const count=document.getElementById('count');
+const status=document.getElementById('status');
+const modal=document.getElementById('doneModal');
+const printDate=document.getElementById('printDate');
+
+let choices=[];
+try{choices=JSON.parse(localStorage.getItem('counsellingChoicesV2')||'[]')}catch(e){choices=[]}
+
+function persist(){localStorage.setItem('counsellingChoicesV2',JSON.stringify(choices));render()}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+
+function render(){
+  count.textContent=choices.length+(choices.length===1?' choice':' choices');
+  if(!choices.length){
+    list.className='empty'; list.textContent='No choices added yet.'; return;
+  }
+  list.className='';
+  list.innerHTML='<ol>'+choices.map((c,i)=>
+    '<li class="choice">'+
+      '<span class="choice-name">'+escapeHtml(c)+'</span>'+
+      '<span class="choice-actions">'+
+        '<button class="icon" aria-label="Move up" onclick="moveChoice('+i+',-1)">↑</button>'+
+        '<button class="icon" aria-label="Move down" onclick="moveChoice('+i+',1)">↓</button>'+
+        '<button class="icon danger" aria-label="Delete" onclick="deleteChoice('+i+')">×</button>'+
+      '</span>'+
+    '</li>'
+  ).join('')+'</ol>';
+}
+
+function addChoice(){
+  const value=input.value.trim();
+  if(!value)return;
+  choices.push(value);
+  input.value='';
+  persist();
+  input.focus();
+  status.textContent='Choice added.';
+  setTimeout(()=>status.textContent='',1500);
+}
+function deleteChoice(i){choices.splice(i,1);persist()}
+function moveChoice(i,d){
+  const j=i+d;
+  if(j<0||j>=choices.length)return;
+  [choices[i],choices[j]]=[choices[j],choices[i]];
+  persist();
+}
+window.moveChoice=moveChoice; window.deleteChoice=deleteChoice;
+
+document.getElementById('addBtn').onclick=addChoice;
+input.addEventListener('keydown',e=>{if(e.key==='Enter')addChoice()});
+document.getElementById('clearBtn').onclick=()=>{
+  if(!choices.length)return;
+  if(confirm('Clear all choices?')){choices=[];persist()}
+};
+
+document.getElementById('pdfBtn').onclick=()=>{
+  if(!choices.length){alert('Add at least one choice first.');return}
+  const d=new Date();
+  printDate.textContent='Final choice list • '+d.toLocaleDateString(undefined,{day:'numeric',month:'long',year:'numeric'});
+  const oldTitle=document.title;
+  document.title='Counselling Choice List';
+  modal.classList.add('show');
+  setTimeout(()=>window.print(),150);
+  setTimeout(()=>document.title=oldTitle,1200);
+};
+
+document.getElementById('stayBtn').onclick=()=>modal.classList.remove('show');
+document.getElementById('doneBtn').onclick=()=>{
+  modal.classList.remove('show');
+  status.textContent='Finished. You can close this Safari tab.';
+  window.scrollTo({top:0,behavior:'smooth'});
+};
+
+window.addEventListener('afterprint',()=>{status.textContent='PDF/print process finished. Tap Done when you are ready.'});
+render();
+</script>
+</body>
+</html>
